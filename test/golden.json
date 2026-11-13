@@ -1,0 +1,969 @@
+{
+  "cases": [
+    {
+      "name": "openai image submits the mapped FLUX.2 model with x-key",
+      "hook": "buildSubmitRequest",
+      "args": [
+        {
+          "requestBody": {
+            "prompt": "A cat",
+            "width": 1536,
+            "height": 1024,
+            "seed": 3,
+            "model": "cat"
+          },
+          "requestHeaders": {
+            "Content-Type": "application/json",
+            "Accept": ""
+          },
+          "action": "text_to_image",
+          "model": "cat",
+          "upstreamModel": "flux-2-pro",
+          "baseUrl": "https://api.bfl.ai",
+          "apiKey": "test-key",
+          "authHeader": "Bearer test-key",
+          "upstream": {
+            "kind": "vendor"
+          },
+          "config": {},
+          "files": [],
+          "publicTaskId": "task_public"
+        }
+      ],
+      "expected": {
+        "url": "https://api.bfl.ai/v1/flux-2-pro",
+        "method": "POST",
+        "headers": {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "x-key": "test-key"
+        },
+        "body": {
+          "prompt": "A cat",
+          "width": 1536,
+          "height": 1024,
+          "seed": 3
+        },
+        "action": "text_to_image"
+      }
+    },
+    {
+      "name": "FLUX.2 reserves output megapixels at list price",
+      "hook": "extractUsage",
+      "args": [
+        {
+          "requestBody": {
+            "prompt": "A cat",
+            "width": 1536,
+            "height": 1024,
+            "seed": 3,
+            "model": "cat"
+          },
+          "requestHeaders": {
+            "Content-Type": "application/json",
+            "Accept": ""
+          },
+          "action": "text_to_image",
+          "model": "cat",
+          "upstreamModel": "flux-2-pro",
+          "baseUrl": "https://api.bfl.ai",
+          "apiKey": "test-key",
+          "authHeader": "Bearer test-key",
+          "upstream": {
+            "kind": "vendor"
+          },
+          "config": {},
+          "files": [],
+          "publicTaskId": "task_public"
+        }
+      ],
+      "expected": {
+        "credits": 4.5,
+        "output_megapixels": 2,
+        "input_megapixels": 0,
+        "image_count": 1
+      }
+    },
+    {
+      "name": "FLUX 3 Image sends resolution 1k",
+      "hook": "buildSubmitRequest",
+      "args": [
+        {
+          "requestBody": {
+            "prompt": "A rabbit",
+            "aspect_ratio": "16:9",
+            "resolution": "1k",
+            "model": "flux-3-image"
+          },
+          "requestHeaders": {
+            "Content-Type": "application/json",
+            "Accept": ""
+          },
+          "action": "text_to_image",
+          "model": "flux-3-image",
+          "upstreamModel": "flux-3-image",
+          "baseUrl": "https://api.bfl.ai",
+          "apiKey": "test-key",
+          "authHeader": "Bearer test-key",
+          "upstream": {
+            "kind": "vendor"
+          },
+          "config": {},
+          "files": [],
+          "publicTaskId": "task_public"
+        }
+      ],
+      "expected": {
+        "url": "https://api.bfl.ai/v1/flux-3-image",
+        "method": "POST",
+        "headers": {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "x-key": "test-key"
+        },
+        "body": {
+          "prompt": "A rabbit",
+          "aspect_ratio": "16:9",
+          "resolution": "1k"
+        },
+        "action": "text_to_image"
+      }
+    },
+    {
+      "name": "FLUX 3 Image reserves the 1k tier",
+      "hook": "extractUsage",
+      "args": [
+        {
+          "requestBody": {
+            "prompt": "A rabbit",
+            "aspect_ratio": "16:9",
+            "resolution": "1k",
+            "model": "flux-3-image"
+          },
+          "requestHeaders": {
+            "Content-Type": "application/json",
+            "Accept": ""
+          },
+          "action": "text_to_image",
+          "model": "flux-3-image",
+          "upstreamModel": "flux-3-image",
+          "baseUrl": "https://api.bfl.ai",
+          "apiKey": "test-key",
+          "authHeader": "Bearer test-key",
+          "upstream": {
+            "kind": "vendor"
+          },
+          "config": {},
+          "files": [],
+          "publicTaskId": "task_public"
+        }
+      ],
+      "expected": {
+        "credits": 4.8,
+        "resolution": "1k",
+        "image_count": 1
+      }
+    },
+    {
+      "name": "fill edit sends image and mask",
+      "hook": "buildSubmitRequest",
+      "args": [
+        {
+          "requestBody": {
+            "image": "https://a/1.png",
+            "mask": "https://a/m.png",
+            "prompt": "a hat",
+            "model": "flux-pro-1.0-fill"
+          },
+          "requestHeaders": {
+            "Content-Type": "application/json",
+            "Accept": ""
+          },
+          "action": "inpaint",
+          "model": "flux-pro-1.0-fill",
+          "upstreamModel": "flux-pro-1.0-fill",
+          "baseUrl": "https://api.bfl.ai",
+          "apiKey": "test-key",
+          "authHeader": "Bearer test-key",
+          "upstream": {
+            "kind": "vendor"
+          },
+          "config": {},
+          "files": [],
+          "publicTaskId": "task_public"
+        }
+      ],
+      "expected": {
+        "url": "https://api.bfl.ai/v1/flux-pro-1.0-fill",
+        "method": "POST",
+        "headers": {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "x-key": "test-key"
+        },
+        "body": {
+          "image": "https://a/1.png",
+          "mask": "https://a/m.png",
+          "prompt": "a hat"
+        },
+        "action": "inpaint"
+      }
+    },
+    {
+      "name": "unknown fields are rejected",
+      "hook": "buildSubmitRequest",
+      "args": [
+        {
+          "requestBody": {
+            "model": "flux-3-image",
+            "prompt": "x",
+            "seed": 1
+          },
+          "requestHeaders": {
+            "Content-Type": "application/json",
+            "Accept": ""
+          },
+          "action": "text_to_image",
+          "model": "flux-3-image",
+          "upstreamModel": "flux-3-image",
+          "baseUrl": "https://api.bfl.ai",
+          "apiKey": "test-key",
+          "authHeader": "Bearer test-key",
+          "upstream": {
+            "kind": "vendor"
+          },
+          "config": {},
+          "files": [],
+          "publicTaskId": "task_public"
+        }
+      ],
+      "expectedError": "seed is not supported on flux-3-image"
+    },
+    {
+      "name": "webhooks are rejected",
+      "hook": "buildSubmitRequest",
+      "args": [
+        {
+          "requestBody": {
+            "model": "flux-2-pro",
+            "prompt": "x",
+            "webhook_url": "https://hook"
+          },
+          "requestHeaders": {
+            "Content-Type": "application/json",
+            "Accept": ""
+          },
+          "action": "text_to_image",
+          "model": "flux-2-pro",
+          "upstreamModel": "flux-2-pro",
+          "baseUrl": "https://api.bfl.ai",
+          "apiKey": "test-key",
+          "authHeader": "Bearer test-key",
+          "upstream": {
+            "kind": "vendor"
+          },
+          "config": {},
+          "files": [],
+          "publicTaskId": "task_public"
+        }
+      ],
+      "expectedError": "poll the task instead"
+    },
+    {
+      "name": "an unsupported model is rejected",
+      "hook": "buildSubmitRequest",
+      "args": [
+        {
+          "requestBody": {
+            "prompt": "x"
+          },
+          "requestHeaders": {
+            "Content-Type": "application/json",
+            "Accept": ""
+          },
+          "action": "text_to_image",
+          "model": "flux-pro-1.0",
+          "upstreamModel": "flux-pro-1.0",
+          "baseUrl": "https://api.bfl.ai",
+          "apiKey": "test-key",
+          "authHeader": "Bearer test-key",
+          "upstream": {
+            "kind": "vendor"
+          },
+          "config": {},
+          "files": [],
+          "publicTaskId": "task_public"
+        }
+      ],
+      "expectedError": "is not a supported FLUX model"
+    },
+    {
+      "name": "submit keeps id, polling_url and cost in state",
+      "hook": "parseSubmitResponse",
+      "args": [
+        {
+          "requestBody": {
+            "prompt": "A cat",
+            "width": 1536,
+            "height": 1024,
+            "seed": 3,
+            "model": "cat"
+          },
+          "requestHeaders": {
+            "Content-Type": "application/json",
+            "Accept": ""
+          },
+          "action": "text_to_image",
+          "model": "cat",
+          "upstreamModel": "flux-2-pro",
+          "baseUrl": "https://api.bfl.ai",
+          "apiKey": "test-key",
+          "authHeader": "Bearer test-key",
+          "upstream": {
+            "kind": "vendor"
+          },
+          "config": {},
+          "files": [],
+          "publicTaskId": "task_public"
+        },
+        {
+          "statusCode": 200,
+          "headers": {},
+          "body": {
+            "id": "bfl-1",
+            "polling_url": "https://api.us1.bfl.ai/v1/get_result?id=bfl-1",
+            "cost": 4.5,
+            "input_mp": 0,
+            "output_mp": 1.5
+          }
+        }
+      ],
+      "expected": {
+        "taskId": "bfl-1",
+        "taskData": {
+          "id": "bfl-1",
+          "polling_url": "https://api.us1.bfl.ai/v1/get_result?id=bfl-1",
+          "cost": 4.5,
+          "input_mp": 0,
+          "output_mp": 1.5
+        },
+        "state": {
+          "model": "flux-2-pro",
+          "refs": 0,
+          "reserved": {
+            "credits": 4.5,
+            "output_megapixels": 2,
+            "input_megapixels": 0,
+            "image_count": 1
+          },
+          "polling_url": "https://api.us1.bfl.ai/v1/get_result?id=bfl-1",
+          "cost": 4.5,
+          "input_mp": 0,
+          "output_mp": 1.5
+        }
+      }
+    },
+    {
+      "name": "submit without an id fails",
+      "hook": "parseSubmitResponse",
+      "args": [
+        {
+          "requestBody": {
+            "prompt": "A cat",
+            "width": 1536,
+            "height": 1024,
+            "seed": 3,
+            "model": "cat"
+          },
+          "requestHeaders": {
+            "Content-Type": "application/json",
+            "Accept": ""
+          },
+          "action": "text_to_image",
+          "model": "cat",
+          "upstreamModel": "flux-2-pro",
+          "baseUrl": "https://api.bfl.ai",
+          "apiKey": "test-key",
+          "authHeader": "Bearer test-key",
+          "upstream": {
+            "kind": "vendor"
+          },
+          "config": {},
+          "files": [],
+          "publicTaskId": "task_public"
+        },
+        {
+          "statusCode": 200,
+          "headers": {},
+          "body": {}
+        }
+      ],
+      "expectedError": "did not return a task id"
+    },
+    {
+      "name": "poll uses the regional polling_url",
+      "hook": "buildQueryRequest",
+      "args": [
+        {
+          "taskId": "bfl-1",
+          "publicTaskId": "task_public",
+          "action": "text_to_image",
+          "model": "cat",
+          "upstreamModel": "flux-2-pro",
+          "baseUrl": "https://api.bfl.ai",
+          "apiKey": "test-key",
+          "authHeader": "Bearer test-key",
+          "upstream": {
+            "kind": "vendor"
+          },
+          "config": {},
+          "data": {},
+          "state": {
+            "model": "flux-2-pro",
+            "refs": 0,
+            "reserved": {
+              "credits": 4.5,
+              "output_megapixels": 2,
+              "input_megapixels": 0,
+              "image_count": 1
+            },
+            "polling_url": "https://api.us1.bfl.ai/v1/get_result?id=bfl-1",
+            "cost": 4.5,
+            "input_mp": 0,
+            "output_mp": 1.5
+          }
+        }
+      ],
+      "expected": {
+        "url": "https://api.us1.bfl.ai/v1/get_result?id=bfl-1",
+        "method": "GET",
+        "headers": {
+          "Accept": "application/json",
+          "x-key": "test-key"
+        }
+      }
+    },
+    {
+      "name": "poll on a foreign host falls back to the channel",
+      "hook": "buildQueryRequest",
+      "args": [
+        {
+          "taskId": "bfl-1",
+          "publicTaskId": "task_public",
+          "action": "text_to_image",
+          "model": "cat",
+          "upstreamModel": "flux-2-pro",
+          "baseUrl": "https://api.bfl.ai",
+          "apiKey": "test-key",
+          "authHeader": "Bearer test-key",
+          "upstream": {
+            "kind": "vendor"
+          },
+          "config": {},
+          "data": {},
+          "state": {
+            "model": "flux-2-pro",
+            "refs": 0,
+            "reserved": {
+              "credits": 4.5,
+              "output_megapixels": 2,
+              "input_megapixels": 0,
+              "image_count": 1
+            },
+            "polling_url": "https://evil.example/v1/get_result?id=bfl-1",
+            "cost": 4.5,
+            "input_mp": 0,
+            "output_mp": 1.5
+          }
+        }
+      ],
+      "expected": {
+        "url": "https://api.bfl.ai/v1/get_result?id=bfl-1",
+        "method": "GET",
+        "headers": {
+          "Accept": "application/json",
+          "x-key": "test-key"
+        }
+      }
+    },
+    {
+      "name": "Pending without progress is QUEUED",
+      "hook": "parseTaskResult",
+      "args": [
+        {
+          "taskId": "bfl-1",
+          "publicTaskId": "task_public",
+          "action": "text_to_image",
+          "model": "cat",
+          "upstreamModel": "flux-2-pro",
+          "baseUrl": "https://api.bfl.ai",
+          "apiKey": "test-key",
+          "authHeader": "Bearer test-key",
+          "upstream": {
+            "kind": "vendor"
+          },
+          "config": {},
+          "data": {},
+          "state": {
+            "model": "flux-2-pro",
+            "refs": 0,
+            "reserved": {
+              "credits": 4.5,
+              "output_megapixels": 2,
+              "input_megapixels": 0,
+              "image_count": 1
+            },
+            "polling_url": "https://api.us1.bfl.ai/v1/get_result?id=bfl-1",
+            "cost": 4.5,
+            "input_mp": 0,
+            "output_mp": 1.5
+          }
+        },
+        {
+          "id": "bfl-1",
+          "status": "Pending",
+          "progress": null
+        },
+        {
+          "status": 200,
+          "headers": {}
+        }
+      ],
+      "expected": {
+        "status": "QUEUED"
+      }
+    },
+    {
+      "name": "Generating is IN_PROGRESS",
+      "hook": "parseTaskResult",
+      "args": [
+        {
+          "taskId": "bfl-1",
+          "publicTaskId": "task_public",
+          "action": "text_to_image",
+          "model": "cat",
+          "upstreamModel": "flux-2-pro",
+          "baseUrl": "https://api.bfl.ai",
+          "apiKey": "test-key",
+          "authHeader": "Bearer test-key",
+          "upstream": {
+            "kind": "vendor"
+          },
+          "config": {},
+          "data": {},
+          "state": {
+            "model": "flux-2-pro",
+            "refs": 0,
+            "reserved": {
+              "credits": 4.5,
+              "output_megapixels": 2,
+              "input_megapixels": 0,
+              "image_count": 1
+            },
+            "polling_url": "https://api.us1.bfl.ai/v1/get_result?id=bfl-1",
+            "cost": 4.5,
+            "input_mp": 0,
+            "output_mp": 1.5
+          }
+        },
+        {
+          "id": "bfl-1",
+          "status": "Generating",
+          "progress": 0.5
+        },
+        {
+          "status": 200,
+          "headers": {}
+        }
+      ],
+      "expected": {
+        "status": "IN_PROGRESS",
+        "progress": "50%"
+      }
+    },
+    {
+      "name": "Ready with a sample succeeds",
+      "hook": "parseTaskResult",
+      "args": [
+        {
+          "taskId": "bfl-1",
+          "publicTaskId": "task_public",
+          "action": "text_to_image",
+          "model": "cat",
+          "upstreamModel": "flux-2-pro",
+          "baseUrl": "https://api.bfl.ai",
+          "apiKey": "test-key",
+          "authHeader": "Bearer test-key",
+          "upstream": {
+            "kind": "vendor"
+          },
+          "config": {},
+          "data": {},
+          "state": {
+            "model": "flux-2-pro",
+            "refs": 0,
+            "reserved": {
+              "credits": 4.5,
+              "output_megapixels": 2,
+              "input_megapixels": 0,
+              "image_count": 1
+            },
+            "polling_url": "https://api.us1.bfl.ai/v1/get_result?id=bfl-1",
+            "cost": 4.5,
+            "input_mp": 0,
+            "output_mp": 1.5
+          }
+        },
+        {
+          "id": "bfl-1",
+          "status": "Ready",
+          "result": {
+            "sample": "https://delivery-us1.bfl.ai/results/a/sample.png?se=1",
+            "seed": 3
+          },
+          "progress": null,
+          "details": null,
+          "cost": 4.5
+        },
+        {
+          "status": 200,
+          "headers": {}
+        }
+      ],
+      "expected": {
+        "status": "SUCCESS",
+        "progress": "100%"
+      }
+    },
+    {
+      "name": "Request Moderated fails with the reasons",
+      "hook": "parseTaskResult",
+      "args": [
+        {
+          "taskId": "bfl-1",
+          "publicTaskId": "task_public",
+          "action": "text_to_image",
+          "model": "cat",
+          "upstreamModel": "flux-2-pro",
+          "baseUrl": "https://api.bfl.ai",
+          "apiKey": "test-key",
+          "authHeader": "Bearer test-key",
+          "upstream": {
+            "kind": "vendor"
+          },
+          "config": {},
+          "data": {},
+          "state": {
+            "model": "flux-2-pro",
+            "refs": 0,
+            "reserved": {
+              "credits": 4.5,
+              "output_megapixels": 2,
+              "input_megapixels": 0,
+              "image_count": 1
+            },
+            "polling_url": "https://api.us1.bfl.ai/v1/get_result?id=bfl-1",
+            "cost": 4.5,
+            "input_mp": 0,
+            "output_mp": 1.5
+          }
+        },
+        {
+          "id": "bfl-1",
+          "status": "Request Moderated",
+          "result": null,
+          "details": {
+            "Moderation Reasons": [
+              "Violence"
+            ]
+          }
+        },
+        {
+          "status": 200,
+          "headers": {}
+        }
+      ],
+      "expected": {
+        "status": "FAILURE",
+        "reason": "Request Moderated: Violence"
+      }
+    },
+    {
+      "name": "Error fails",
+      "hook": "parseTaskResult",
+      "args": [
+        {
+          "taskId": "bfl-1",
+          "publicTaskId": "task_public",
+          "action": "text_to_image",
+          "model": "cat",
+          "upstreamModel": "flux-2-pro",
+          "baseUrl": "https://api.bfl.ai",
+          "apiKey": "test-key",
+          "authHeader": "Bearer test-key",
+          "upstream": {
+            "kind": "vendor"
+          },
+          "config": {},
+          "data": {},
+          "state": {
+            "model": "flux-2-pro",
+            "refs": 0,
+            "reserved": {
+              "credits": 4.5,
+              "output_megapixels": 2,
+              "input_megapixels": 0,
+              "image_count": 1
+            },
+            "polling_url": "https://api.us1.bfl.ai/v1/get_result?id=bfl-1",
+            "cost": 4.5,
+            "input_mp": 0,
+            "output_mp": 1.5
+          }
+        },
+        {
+          "id": "bfl-1",
+          "status": "Error",
+          "details": null
+        },
+        {
+          "status": 200,
+          "headers": {}
+        }
+      ],
+      "expected": {
+        "status": "FAILURE",
+        "reason": "Error"
+      }
+    },
+    {
+      "name": "unknown status is UNKNOWN",
+      "hook": "parseTaskResult",
+      "args": [
+        {
+          "taskId": "bfl-1",
+          "publicTaskId": "task_public",
+          "action": "text_to_image",
+          "model": "cat",
+          "upstreamModel": "flux-2-pro",
+          "baseUrl": "https://api.bfl.ai",
+          "apiKey": "test-key",
+          "authHeader": "Bearer test-key",
+          "upstream": {
+            "kind": "vendor"
+          },
+          "config": {},
+          "data": {},
+          "state": {
+            "model": "flux-2-pro",
+            "refs": 0,
+            "reserved": {
+              "credits": 4.5,
+              "output_megapixels": 2,
+              "input_megapixels": 0,
+              "image_count": 1
+            },
+            "polling_url": "https://api.us1.bfl.ai/v1/get_result?id=bfl-1",
+            "cost": 4.5,
+            "input_mp": 0,
+            "output_mp": 1.5
+          }
+        },
+        {
+          "id": "bfl-1",
+          "status": "Brewing"
+        },
+        {
+          "status": 200,
+          "headers": {}
+        }
+      ],
+      "expected": {
+        "status": "UNKNOWN",
+        "reason": "unrecognized status: Brewing"
+      }
+    },
+    {
+      "name": "completion settles on the reported cost",
+      "hook": "extractUsageOnComplete",
+      "args": [
+        {
+          "taskId": "bfl-1",
+          "publicTaskId": "task_public",
+          "action": "text_to_image",
+          "model": "cat",
+          "upstreamModel": "flux-2-pro",
+          "baseUrl": "https://api.bfl.ai",
+          "apiKey": "test-key",
+          "authHeader": "Bearer test-key",
+          "upstream": {
+            "kind": "vendor"
+          },
+          "config": {},
+          "data": {},
+          "state": {
+            "model": "flux-2-pro",
+            "refs": 0,
+            "reserved": {
+              "credits": 4.5,
+              "output_megapixels": 2,
+              "input_megapixels": 0,
+              "image_count": 1
+            },
+            "polling_url": "https://api.us1.bfl.ai/v1/get_result?id=bfl-1",
+            "cost": 4.5,
+            "input_mp": 0,
+            "output_mp": 1.5
+          }
+        },
+        {
+          "status": "SUCCESS"
+        },
+        {
+          "id": "bfl-1",
+          "status": "Ready",
+          "result": {
+            "sample": "https://delivery-us1.bfl.ai/results/a/sample.png?se=1",
+            "seed": 3
+          },
+          "progress": null,
+          "details": null,
+          "cost": 4.5
+        }
+      ],
+      "expected": {
+        "credits": 4.5,
+        "output_megapixels": 2,
+        "input_megapixels": 0,
+        "image_count": 1
+      }
+    },
+    {
+      "name": "a failed task does not settle",
+      "hook": "extractUsageOnComplete",
+      "args": [
+        {
+          "taskId": "bfl-1",
+          "publicTaskId": "task_public",
+          "action": "text_to_image",
+          "model": "cat",
+          "upstreamModel": "flux-2-pro",
+          "baseUrl": "https://api.bfl.ai",
+          "apiKey": "test-key",
+          "authHeader": "Bearer test-key",
+          "upstream": {
+            "kind": "vendor"
+          },
+          "config": {},
+          "data": {},
+          "state": {
+            "model": "flux-2-pro",
+            "refs": 0,
+            "reserved": {
+              "credits": 4.5,
+              "output_megapixels": 2,
+              "input_megapixels": 0,
+              "image_count": 1
+            },
+            "polling_url": "https://api.us1.bfl.ai/v1/get_result?id=bfl-1",
+            "cost": 4.5,
+            "input_mp": 0,
+            "output_mp": 1.5
+          }
+        },
+        {
+          "status": "FAILURE"
+        },
+        {
+          "id": "bfl-1",
+          "status": "Error"
+        }
+      ],
+      "expected": null
+    },
+    {
+      "name": "the sample is listed as an image artifact",
+      "hook": "listArtifacts",
+      "args": [
+        {
+          "taskId": "bfl-1",
+          "status": "SUCCESS",
+          "action": "text_to_image",
+          "data": {
+            "id": "bfl-1",
+            "status": "Ready",
+            "result": {
+              "sample": "https://delivery-us1.bfl.ai/results/a/sample.png?se=1",
+              "seed": 3
+            },
+            "progress": null,
+            "details": null,
+            "cost": 4.5
+          },
+          "producerVersion": "1.0.0"
+        }
+      ],
+      "expected": [
+        {
+          "key": "image",
+          "type": "image",
+          "mimeType": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "download falls back to the polled sample URL without credentials",
+      "hook": "buildContentRequest",
+      "args": [
+        {
+          "requestBody": {
+            "prompt": "A cat",
+            "width": 1536,
+            "height": 1024,
+            "seed": 3,
+            "model": "cat"
+          },
+          "requestHeaders": {
+            "Content-Type": "application/json",
+            "Accept": ""
+          },
+          "action": "text_to_image",
+          "model": "cat",
+          "upstreamModel": "cat",
+          "baseUrl": "https://api.bfl.ai",
+          "apiKey": "test-key",
+          "authHeader": "Bearer test-key",
+          "upstream": {
+            "kind": "vendor"
+          },
+          "config": {},
+          "files": [],
+          "publicTaskId": "task_public",
+          "artifactKey": "image",
+          "data": {
+            "id": "bfl-1",
+            "status": "Ready",
+            "result": {
+              "sample": "https://delivery-us1.bfl.ai/results/a/sample.png?se=1",
+              "seed": 3
+            },
+            "progress": null,
+            "details": null,
+            "cost": 4.5
+          },
+          "state": {},
+          "upstreamTaskId": "",
+          "clientRequest": {
+            "method": "GET",
+            "headers": {}
+          }
+        }
+      ],
+      "expected": {
+        "url": "https://delivery-us1.bfl.ai/results/a/sample.png?se=1",
+        "method": "GET",
+        "credentialless": true
+      }
+    }
+  ]
+}
