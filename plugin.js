@@ -57,11 +57,11 @@ const POLL_HOSTS = ["api.bfl.ai", "api.us.bfl.ai", "api.eu.bfl.ai", "api.us1.bfl
 export const meta = {
   "apiVersion": 1,
   "key": "byaiden_flux",
-  "name": "Black Forest Labs FLUX",
+  "name": "FLUX",
   "icon": "Bfl",
   "description": {
-    "en": "Black Forest Labs FLUX image generation and editing: FLUX 3 Image, FLUX.2 (max, pro, flex, klein) and FLUX.1 (Kontext, 1.1 pro, Ultra, dev, Fill)",
-    "zh": "Black Forest Labs FLUX 图片生成与编辑：FLUX 3 Image、FLUX.2（max、pro、flex、klein）与 FLUX.1（Kontext、1.1 pro、Ultra、dev、Fill）"
+    "en": "FLUX image generation and editing by Black Forest Labs: FLUX 3 Image, FLUX.2 (max, pro, flex, klein) and FLUX.1 (Kontext, 1.1 pro, Ultra, dev, Fill)",
+    "zh": "FLUX 图片生成与编辑（Black Forest Labs 官方 API）：FLUX 3 Image、FLUX.2（max、pro、flex、klein）与 FLUX.1（Kontext、1.1 pro、Ultra、dev、Fill）"
   },
   "version": "1.0.0",
   "author": {

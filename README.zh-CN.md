@@ -1,7 +1,7 @@
 ---
 locale: zh-CN
 ---
-# Black Forest Labs FLUX
+# FLUX
 
 [English](README.md) | **简体中文**
 

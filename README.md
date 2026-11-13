@@ -2,7 +2,7 @@
 translations:
   zh-CN: README.zh-CN.md
 ---
-# Black Forest Labs FLUX
+# FLUX
 
 **English** | [简体中文](README.zh-CN.md)
 
