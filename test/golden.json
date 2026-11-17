@@ -964,6 +964,257 @@
         "method": "GET",
         "credentialless": true
       }
+    },
+    {
+      "name": "new_api: submit goes to the middle gateway with Bearer",
+      "hook": "buildSubmitRequest",
+      "args": [
+        {
+          "requestBody": {
+            "prompt": "A cat",
+            "width": 1536,
+            "height": 1024,
+            "seed": 3,
+            "model": "flux-2-pro"
+          },
+          "requestHeaders": {
+            "Content-Type": "application/json",
+            "Accept": ""
+          },
+          "action": "text_to_image",
+          "model": "flux-2-pro",
+          "upstreamModel": "flux-2-pro",
+          "files": [],
+          "publicTaskId": "task_public",
+          "baseUrl": "http://middle.example:3000",
+          "apiKey": "sk-gateway",
+          "authHeader": "Bearer sk-gateway",
+          "upstream": {
+            "kind": "new_api"
+          },
+          "config": {}
+        }
+      ],
+      "expected": {
+        "url": "http://middle.example:3000/byaiden_flux/v1/flux-2-pro",
+        "method": "POST",
+        "headers": {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "Authorization": "Bearer sk-gateway"
+        },
+        "body": {
+          "prompt": "A cat",
+          "width": 1536,
+          "height": 1024,
+          "seed": 3
+        },
+        "action": "text_to_image"
+      }
+    },
+    {
+      "name": "new_api: submit reply from the middle gateway",
+      "hook": "parseSubmitResponse",
+      "args": [
+        {
+          "requestBody": {
+            "prompt": "A cat",
+            "width": 1536,
+            "height": 1024,
+            "seed": 3,
+            "model": "flux-2-pro"
+          },
+          "requestHeaders": {
+            "Content-Type": "application/json",
+            "Accept": ""
+          },
+          "action": "text_to_image",
+          "model": "flux-2-pro",
+          "upstreamModel": "flux-2-pro",
+          "files": [],
+          "publicTaskId": "task_public",
+          "baseUrl": "http://middle.example:3000",
+          "apiKey": "sk-gateway",
+          "authHeader": "Bearer sk-gateway",
+          "upstream": {
+            "kind": "new_api"
+          },
+          "config": {}
+        },
+        {
+          "statusCode": 200,
+          "headers": {},
+          "body": {
+            "id": "task_middle",
+            "polling_url": "/v1/get_result?id=task_middle",
+            "output_mp": 1.5
+          }
+        }
+      ],
+      "expected": {
+        "taskId": "task_middle",
+        "taskData": {
+          "id": "task_middle",
+          "polling_url": "/v1/get_result?id=task_middle",
+          "output_mp": 1.5
+        },
+        "state": {
+          "model": "flux-2-pro",
+          "refs": 0,
+          "reserved": {
+            "credits": 4.5,
+            "output_megapixels": 2,
+            "input_megapixels": 0,
+            "image_count": 1
+          },
+          "polling_url": "/v1/get_result?id=task_middle",
+          "output_mp": 1.5
+        }
+      }
+    },
+    {
+      "name": "new_api: query on the middle gateway's get_result",
+      "hook": "buildQueryRequest",
+      "args": [
+        {
+          "taskId": "task_middle",
+          "publicTaskId": "task_public",
+          "action": "generate",
+          "model": "flux-2-pro",
+          "upstreamModel": "flux-2-pro",
+          "data": null,
+          "state": {
+            "model": "flux-2-pro",
+            "refs": 0,
+            "reserved": {
+              "credits": 4.5,
+              "output_megapixels": 2,
+              "input_megapixels": 0,
+              "image_count": 1
+            },
+            "polling_url": "/v1/get_result?id=task_middle",
+            "output_mp": 1.5
+          },
+          "baseUrl": "http://middle.example:3000",
+          "apiKey": "sk-gateway",
+          "authHeader": "Bearer sk-gateway",
+          "upstream": {
+            "kind": "new_api"
+          },
+          "config": {}
+        }
+      ],
+      "expected": {
+        "url": "http://middle.example:3000/byaiden_flux/v1/get_result?id=task_middle",
+        "method": "GET",
+        "headers": {
+          "Accept": "application/json",
+          "Authorization": "Bearer sk-gateway"
+        }
+      }
+    },
+    {
+      "name": "new_api: middle gateway reply ready",
+      "hook": "parseTaskResult",
+      "args": [
+        {
+          "taskId": "task_middle",
+          "publicTaskId": "task_public",
+          "action": "generate",
+          "model": "flux-2-pro",
+          "upstreamModel": "flux-2-pro",
+          "data": null,
+          "state": {
+            "model": "flux-2-pro",
+            "refs": 0,
+            "reserved": {
+              "credits": 4.5,
+              "output_megapixels": 2,
+              "input_megapixels": 0,
+              "image_count": 1
+            },
+            "polling_url": "/v1/get_result?id=task_middle",
+            "output_mp": 1.5
+          },
+          "baseUrl": "http://middle.example:3000",
+          "apiKey": "sk-gateway",
+          "authHeader": "Bearer sk-gateway",
+          "upstream": {
+            "kind": "new_api"
+          },
+          "config": {}
+        },
+        {
+          "id": "task_middle",
+          "status": "Ready",
+          "result": {
+            "sample": "http://middle.example:3000/v1/tasks/task_middle/artifacts/image?sig=1",
+            "seed": 3
+          },
+          "progress": null,
+          "details": null
+        },
+        {
+          "status": 200,
+          "headers": {}
+        }
+      ],
+      "expected": {
+        "status": "SUCCESS",
+        "progress": "100%"
+      }
+    },
+    {
+      "name": "new_api: settles on the reported megapixels without a cost",
+      "hook": "extractUsageOnComplete",
+      "args": [
+        {
+          "taskId": "task_middle",
+          "publicTaskId": "task_public",
+          "action": "generate",
+          "model": "flux-2-pro",
+          "upstreamModel": "flux-2-pro",
+          "data": null,
+          "state": {
+            "model": "flux-2-pro",
+            "refs": 0,
+            "reserved": {
+              "credits": 4.5,
+              "output_megapixels": 2,
+              "input_megapixels": 0,
+              "image_count": 1
+            },
+            "polling_url": "/v1/get_result?id=task_middle",
+            "output_mp": 1.5
+          },
+          "baseUrl": "http://middle.example:3000",
+          "apiKey": "sk-gateway",
+          "authHeader": "Bearer sk-gateway",
+          "upstream": {
+            "kind": "new_api"
+          },
+          "config": {}
+        },
+        {
+          "status": "SUCCESS"
+        },
+        {
+          "id": "task_middle",
+          "status": "Ready",
+          "result": {
+            "sample": "http://middle.example:3000/v1/tasks/task_middle/artifacts/image?sig=1",
+            "seed": 3
+          },
+          "progress": null,
+          "details": null
+        }
+      ],
+      "expected": {
+        "credits": 4.5,
+        "output_megapixels": 2,
+        "input_megapixels": 0,
+        "image_count": 1
+      }
     }
   ]
 }

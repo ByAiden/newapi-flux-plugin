@@ -98,6 +98,17 @@ curl "https://your-gateway.example.com/v1/get_result?id={id}" \
   -H "Authorization: Bearer $NEW_API_TOKEN"
 ```
 
+## Through another New API gateway
+
+When one gateway (outer) forwards to another one (middle) that holds the BFL channel, install this plugin on both:
+
+- Middle gateway: the Task Plugin channel from Channel setup, with its own prices.
+- Outer gateway: a **New API** channel (type 60) with the middle gateway's address as Base URL, one of its tokens as key, and this plugin picked under upstream task plugins. Add the FLUX models to the channel.
+
+The outer plugin then submits to the middle gateway's `POST /byaiden_flux/v1/{model}` and polls its `GET /byaiden_flux/v1/get_result?id=` with `Authorization: Bearer` and the token (no BFL key, no `x-key`). Image downloads use the middle gateway's signed link, so its server address (System Settings) must be reachable from the outer gateway. The outer gateway's `get_result` shows its own download address; OpenAI image replies carry the middle gateway's signed link, which works without a key.
+
+Billing on the outer gateway: the same usage facts are computed there (`resolution`, `image_count`, `output_megapixels`, `input_megapixels`, `credits`), so the expressions above work unchanged. The middle gateway does not pass on the cost BFL reports (its replies hide it, as for any client), so on the outer gateway `credits` comes from BFL's price list for the reported resolution or megapixels, not from BFL's own figure; the per-model expressions are exact there, `u("credits") * 0.01` follows the list price.
+
 ## Limits
 
 - BFL's image URLs expire: about 10 minutes on most models and one hour on FLUX 3 Image. Download the image right away, or ask for `response_format: "b64_json"` on the OpenAI Images API. A gateway download first asks BFL for a fresh URL; once BFL no longer has the result, the download fails.
@@ -108,3 +119,5 @@ curl "https://your-gateway.example.com/v1/get_result?id={id}" \
 - The OpenAI Images endpoints wait for the image for up to `TASK_PLUGIN_PROTOCOL_TIMEOUT_SECONDS` (600 seconds by default). A task that runs longer, such as a 4K FLUX 3 image, keeps running and settles when it finishes. BFL submissions are not idempotent: a client retry starts and bills a new image.
 - Native routes accept the gateway token as `Authorization: Bearer` only.
 - Not covered: FLUX 3 Video, video editing and upscaling, the FLUX image tools (outpainting, erase, deblur, virtual try-on, expand), fine-tuned endpoints, and FLUX 3 Max, which runs on fal.
+
+New API artifact downloads use the middle gateway’s `/v1/tasks/{id}/artifacts/{key}/content` endpoint with Bearer authentication; vendor CDN requests remain credentialless.

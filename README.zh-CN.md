@@ -97,6 +97,17 @@ curl "https://your-gateway.example.com/v1/get_result?id={id}" \
   -H "Authorization: Bearer $NEW_API_TOKEN"
 ```
 
+## 经由另一个 New API 网关
+
+外层网关转发到持有 BFL 渠道的中间网关时，两边都安装本插件：
+
+- 中间网关：按「渠道设置」建任务插件渠道，并设置自己的价格。
+- 外层网关：新建 **New API** 渠道（类型 60），Base URL 填中间网关地址，密钥填中间网关的令牌，在「上游任务插件」里选择本插件，并把 FLUX 模型加到渠道里。
+
+外层插件会向中间网关的 `POST /byaiden_flux/v1/{model}` 提交，并在 `GET /byaiden_flux/v1/get_result?id=` 查询，用 `Authorization: Bearer` 加令牌鉴权（不用 BFL Key，也不发 `x-key`）。图片下载走中间网关签名的链接，中间网关的服务器地址（系统设置）必须能被外层网关访问。外层的 `get_result` 返回外层自己的下载地址；OpenAI 图片回复里是中间网关签名的链接，不需要密钥即可下载。
+
+外层计费：外层按同样的方式计算用量（`resolution`、`image_count`、`output_megapixels`、`input_megapixels`、`credits`），上面的表达式可以直接使用。中间网关不会转出 BFL 报告的费用（它的回复对所有客户端都隐藏费用），所以外层的 `credits` 按 BFL 价目表和报告的分辨率或百万像素计算，而不是 BFL 自己给出的数字；按模型写的表达式在外层是精确的，`u("credits") * 0.01` 按标价计算。
+
 ## 限制
 
 - BFL 的图片地址会过期：大多数模型约 10 分钟，FLUX 3 Image 为 1 小时。请及时下载，或在 OpenAI Images API 上使用 `response_format: "b64_json"`。网关下载时会先向 BFL 获取新地址；BFL 不再保留结果后，下载会失败。
@@ -107,3 +118,5 @@ curl "https://your-gateway.example.com/v1/get_result?id={id}" \
 - OpenAI Images 接口最多等待 `TASK_PLUGIN_PROTOCOL_TIMEOUT_SECONDS`（默认 600 秒）。超时的任务（如 4K 的 FLUX 3 图片）会继续运行，完成后再结算。BFL 提交接口不是幂等的：客户端重试会生成并计费一张新图片。
 - 原生路由只接受 `Authorization: Bearer` 形式的网关令牌。
 - 未包含：FLUX 3 Video、视频编辑与超分、FLUX 图片工具（扩图、擦除、去模糊、虚拟试穿、Expand）、微调端点，以及运行在 fal 上的 FLUX 3 Max。
+
+经 New API 上游下载文件时，调用中间网关 `/v1/tasks/{id}/artifacts/{key}/content`，携带 Bearer 令牌；直接访问厂商 CDN 时仍不携带密钥。

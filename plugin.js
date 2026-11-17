@@ -63,7 +63,7 @@ export const meta = {
     "en": "FLUX image generation and editing by Black Forest Labs: FLUX 3 Image, FLUX.2 (max, pro, flex, klein) and FLUX.1 (Kontext, 1.1 pro, Ultra, dev, Fill)",
     "zh": "FLUX 图片生成与编辑（Black Forest Labs 官方 API）：FLUX 3 Image、FLUX.2（max、pro、flex、klein）与 FLUX.1（Kontext、1.1 pro、Ultra、dev、Fill）"
   },
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": {
     "name": "ByAiden",
     "url": "https://github.com/ByAiden"
@@ -78,6 +78,10 @@ export const meta = {
     "api.us2.bfl.ai",
     "api.eu1.bfl.ai",
     "api.eu2.bfl.ai"
+  ],
+  "upstreams": [
+    "vendor",
+    "new_api"
   ],
   "models": [
     "flux-3-image",
@@ -457,6 +461,22 @@ export const meta = {
   ]
 };
 
+// The plugin's key; the gateway reads the manifest statically, so code uses this copy.
+const PLUGIN_KEY = "byaiden_flux";
+
+// A type-60 New API channel: the same plugin answers on another gateway,
+// which serves BFL's paths under the plugin's key and takes its own token as
+// Authorization: Bearer. Hosts that never set ctx.upstream mean BFL.
+function viaGateway(ctx) {
+  return !!(ctx && ctx.upstream && ctx.upstream.kind === "new_api");
+}
+
+// The API root requests go to: the channel address, plus the plugin key
+// on another New API gateway.
+function apiRoot(ctx) {
+  return trimmed(ctx.baseUrl).replace(/\/+$/, "") + (viaGateway(ctx) ? "/" + PLUGIN_KEY : "");
+}
+
 function trimmed(value) {
   return String(value === undefined || value === null ? "" : value).trim();
 }
@@ -800,12 +820,14 @@ function pathOf(url) {
 // The address a task is polled at. BFL's polling_url is used as it is when
 // the channel talks to BFL directly and the URL's host is one of BFL's
 // polling hosts; a channel behind a proxy keeps its own host. Otherwise the
-// task is read from the channel's /v1/get_result.
+// task is read from the channel's /v1/get_result, which is also the middle
+// gateway's query route on a New API channel.
 function pollingURL(ctx) {
   const base = trimmed(ctx.baseUrl).replace(/\/+$/, "");
   const state = plainObject(ctx.state) || {};
   const data = plainObject(ctx.data) || {};
-  const fallback = base + "/v1/get_result?id=" + encodeURIComponent(ctx.taskId || ctx.upstreamTaskId);
+  const fallback = apiRoot(ctx) + "/v1/get_result?id=" + encodeURIComponent(ctx.taskId || ctx.upstreamTaskId);
+  if (viaGateway(ctx)) return fallback;
   const polling = trimmed(state.polling_url || data.polling_url);
   if (!polling || !/^\/v1\/get_result\?/.test(pathOf(polling))) return fallback;
   const baseHost = hostOf(base);
@@ -813,8 +835,13 @@ function pollingURL(ctx) {
   return base + pathOf(polling);
 }
 
+// BFL takes the key as x-key; another New API gateway takes its token as Bearer.
+function authHeaders(ctx) {
+  return viaGateway(ctx) ? { Authorization: "Bearer " + (ctx.apiKey || "") } : { "x-key": ctx.apiKey || "" };
+}
+
 function queryHeaders(ctx) {
-  return { Accept: "application/json", "x-key": ctx.apiKey || "" };
+  return Object.assign({ Accept: "application/json" }, authHeaders(ctx));
 }
 
 function resultObject(data) {
@@ -907,9 +934,9 @@ export function buildSubmitRequest(ctx) {
   const model = upstreamModel(ctx);
   const request = bflRequest(ctx.requestBody || {}, model);
   return {
-    url: trimmed(ctx.baseUrl).replace(/\/+$/, "") + "/v1/" + model,
+    url: apiRoot(ctx) + "/v1/" + model,
     method: "POST",
-    headers: { "Content-Type": "application/json", Accept: "application/json", "x-key": ctx.apiKey || "" },
+    headers: Object.assign({ "Content-Type": "application/json", Accept: "application/json" }, authHeaders(ctx)),
     body: request.body,
     action: request.action,
   };
@@ -917,7 +944,8 @@ export function buildSubmitRequest(ctx) {
 
 // BFL answers with id, polling_url and, for most models, the cost in credits
 // and the input and output megapixels. They are kept in the plugin state,
-// since each poll replaces the task data.
+// since each poll replaces the task data. Another New API gateway answers
+// with its own task id and the megapixels, without the cost.
 export function parseSubmitResponse(ctx, resp) {
   const body = plainObject(resp.body);
   const id = body ? trimmed(body.id) : "";
@@ -1013,6 +1041,14 @@ export function listArtifacts(task) {
 // and falls back to the URL from the last poll. The URL is signed, so the
 // download carries no credential.
 export function buildContentRequest(ctx) {
+  if (viaGateway(ctx)) {
+    if (!ctx.upstreamTaskId) throw new Error("artifact_not_found");
+    return {
+      url: String(ctx.baseUrl || "").replace(/\/+$/, "") + "/v1/tasks/" + encodeURIComponent(ctx.upstreamTaskId) + "/artifacts/" + encodeURIComponent(ctx.artifactKey) + "/content",
+      method: (ctx.clientRequest && ctx.clientRequest.method) || "GET",
+      headers: { Authorization: "Bearer " + ctx.apiKey },
+    };
+  }
   if (ctx.artifactKey !== "image") throw new Error("artifact_not_found");
   let url = "";
   if (trimmed(ctx.upstreamTaskId)) {
