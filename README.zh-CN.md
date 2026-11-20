@@ -47,7 +47,7 @@ BFL 路径也可以加插件前缀访问，例如 `/byaiden_flux/v1/flux-2-pro` 
 tier("base", u("credits") * 0.01)
 ```
 
-如需加价转售，再乘以倍率，例如 `* 1.2`。额度（quota）等于美元金额乘以 500000。
+如需加价转售，把价格乘以倍率，例如 1.2 倍写成 `u("credits") * 0.012`；每个字段只保留一个数字（在末尾追加 `* 1.2` 会让模型广场无法显示价格表）。额度（quota）等于美元金额乘以 500000。
 
 其他字段描述图片本身，可用于不依赖积分的定价：
 
@@ -55,17 +55,17 @@ tier("base", u("credits") * 0.01)
 - FLUX.2 模型报告 `output_megapixels` 和 `input_megapixels`，与 BFL 计费一致，按每张图片向上取整到整数百万像素。输出最多计 4 MP。只有一张参考图时最多计 4 MP，多张参考图时每张计 1 MP。未指定尺寸的文生图按 1024x1024 发送。未指定尺寸的编辑保持输入尺寸，先按 4 MP 输出和 4 MP 输入预扣，再按 BFL 提交回复中的实际百万像素结算。
 - FLUX.1 模型报告 `image_count`，固定为 1。
 
-按 BFL 官方价的推荐表达式（每个模型一条，按需再乘倍率）：
+按 BFL 官方价的推荐表达式（每个模型一条，按需把每个数字乘以倍率）。FLUX.2 的常数项是首个百万像素价格减去每百万像素单价，因此与 BFL 的规则（首个输出百万像素一个价格，其余输出百万像素和每个输入百万像素按单价）完全相等，模型广场也能显示成价格表：
 
 | 模型 | 表达式 |
 | --- | --- |
 | `flux-3-image` | `u("resolution") == "768sq" ? tier("768sq", u("image_count") * 0.041) : u("resolution") == "1k" ? tier("1k", u("image_count") * 0.048) : u("resolution") == "1.5k" ? tier("1.5k", u("image_count") * 0.07) : u("resolution") == "2k" ? tier("2k", u("image_count") * 0.1) : tier("4k", u("image_count") * 0.607)` |
 | `flux-3-image-klein` | `u("resolution") == "768sq" ? tier("768sq", u("image_count") * 0.008) : u("resolution") == "1k" ? tier("1k", u("image_count") * 0.009) : u("resolution") == "1.5k" ? tier("1.5k", u("image_count") * 0.011) : u("resolution") == "2k" ? tier("2k", u("image_count") * 0.014) : tier("4k", u("image_count") * 0.036)` |
-| `flux-2-max` | `tier("base", 0.07 + (u("output_megapixels") - 1) * 0.03 + u("input_megapixels") * 0.03)` |
-| `flux-2-pro`、`flux-2-pro-preview` | `tier("base", 0.03 + (u("output_megapixels") - 1) * 0.015 + u("input_megapixels") * 0.015)` |
-| `flux-2-flex` | `tier("base", 0.05 + (u("output_megapixels") - 1) * 0.05 + u("input_megapixels") * 0.05)` |
-| `flux-2-klein-4b` | `tier("base", 0.014 + (u("output_megapixels") - 1) * 0.001 + u("input_megapixels") * 0.001)` |
-| `flux-2-klein-9b`、`flux-2-klein-9b-preview` | `tier("base", 0.015 + (u("output_megapixels") - 1) * 0.002 + u("input_megapixels") * 0.002)` |
+| `flux-2-max` | `tier("base", 0.04 + u("output_megapixels") * 0.03 + u("input_megapixels") * 0.03)` |
+| `flux-2-pro`、`flux-2-pro-preview` | `tier("base", 0.015 + u("output_megapixels") * 0.015 + u("input_megapixels") * 0.015)` |
+| `flux-2-flex` | `tier("base", u("output_megapixels") * 0.05 + u("input_megapixels") * 0.05)` |
+| `flux-2-klein-4b` | `tier("base", 0.013 + u("output_megapixels") * 0.001 + u("input_megapixels") * 0.001)` |
+| `flux-2-klein-9b`、`flux-2-klein-9b-preview` | `tier("base", 0.013 + u("output_megapixels") * 0.002 + u("input_megapixels") * 0.002)` |
 | `flux-kontext-pro`、`flux-pro-1.1` | `tier("base", u("image_count") * 0.04)` |
 | `flux-kontext-max` | `tier("base", u("image_count") * 0.08)` |
 | `flux-pro-1.1-ultra` | `tier("base", u("image_count") * 0.06)` |

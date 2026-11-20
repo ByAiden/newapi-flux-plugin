@@ -48,7 +48,7 @@ Each model has a price table with a credits field, "BFL credit unit price". One 
 tier("base", u("credits") * 0.01)
 ```
 
-Multiply by a margin, for example `* 1.2`, to resell above list price. The quota is the USD amount times 500000.
+To resell above list price, multiply the price by your margin, for example `u("credits") * 0.012` for 1.2 times; keep a single number per field (a trailing `* 1.2` stops the gateway's model page from showing the price table). The quota is the USD amount times 500000.
 
 The other fields describe the image and allow pricing without credits:
 
@@ -56,17 +56,17 @@ The other fields describe the image and allow pricing without credits:
 - FLUX.2 models report `output_megapixels` and `input_megapixels`, rounded up to whole megapixels per image as BFL bills them. Output is capped at 4 MP. One reference image counts up to 4 MP; several count 1 MP each. A text-to-image request without a size is sent as 1024x1024. An edit without a size keeps the input's size and reserves 4 MP output and 4 MP input until BFL reports the actual megapixels in its submit reply.
 - FLUX.1 models report `image_count`, always 1.
 
-Recommended expressions at BFL's list price, one per model (multiply by your margin):
+Recommended expressions at BFL's list price, one per model (multiply each number by your margin). For FLUX.2 the constant is the first-megapixel price minus the price per megapixel, so each expression equals BFL's rule (a price for the first output megapixel plus a price per further output megapixel and per input megapixel) and the gateway's model page shows it as a price table:
 
 | Model | Expression |
 | --- | --- |
 | `flux-3-image` | `u("resolution") == "768sq" ? tier("768sq", u("image_count") * 0.041) : u("resolution") == "1k" ? tier("1k", u("image_count") * 0.048) : u("resolution") == "1.5k" ? tier("1.5k", u("image_count") * 0.07) : u("resolution") == "2k" ? tier("2k", u("image_count") * 0.1) : tier("4k", u("image_count") * 0.607)` |
 | `flux-3-image-klein` | `u("resolution") == "768sq" ? tier("768sq", u("image_count") * 0.008) : u("resolution") == "1k" ? tier("1k", u("image_count") * 0.009) : u("resolution") == "1.5k" ? tier("1.5k", u("image_count") * 0.011) : u("resolution") == "2k" ? tier("2k", u("image_count") * 0.014) : tier("4k", u("image_count") * 0.036)` |
-| `flux-2-max` | `tier("base", 0.07 + (u("output_megapixels") - 1) * 0.03 + u("input_megapixels") * 0.03)` |
-| `flux-2-pro`, `flux-2-pro-preview` | `tier("base", 0.03 + (u("output_megapixels") - 1) * 0.015 + u("input_megapixels") * 0.015)` |
-| `flux-2-flex` | `tier("base", 0.05 + (u("output_megapixels") - 1) * 0.05 + u("input_megapixels") * 0.05)` |
-| `flux-2-klein-4b` | `tier("base", 0.014 + (u("output_megapixels") - 1) * 0.001 + u("input_megapixels") * 0.001)` |
-| `flux-2-klein-9b`, `flux-2-klein-9b-preview` | `tier("base", 0.015 + (u("output_megapixels") - 1) * 0.002 + u("input_megapixels") * 0.002)` |
+| `flux-2-max` | `tier("base", 0.04 + u("output_megapixels") * 0.03 + u("input_megapixels") * 0.03)` |
+| `flux-2-pro`, `flux-2-pro-preview` | `tier("base", 0.015 + u("output_megapixels") * 0.015 + u("input_megapixels") * 0.015)` |
+| `flux-2-flex` | `tier("base", u("output_megapixels") * 0.05 + u("input_megapixels") * 0.05)` |
+| `flux-2-klein-4b` | `tier("base", 0.013 + u("output_megapixels") * 0.001 + u("input_megapixels") * 0.001)` |
+| `flux-2-klein-9b`, `flux-2-klein-9b-preview` | `tier("base", 0.013 + u("output_megapixels") * 0.002 + u("input_megapixels") * 0.002)` |
 | `flux-kontext-pro`, `flux-pro-1.1` | `tier("base", u("image_count") * 0.04)` |
 | `flux-kontext-max` | `tier("base", u("image_count") * 0.08)` |
 | `flux-pro-1.1-ultra` | `tier("base", u("image_count") * 0.06)` |
